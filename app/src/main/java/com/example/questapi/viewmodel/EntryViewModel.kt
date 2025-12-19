@@ -8,7 +8,7 @@ import com.example.questapi.modeldata.DetailSiswa
 import com.example.questapi.modeldata.UIStateSiswa
 import com.example.questapi.modeldata.toDataSiswa
 import com.example.questapi.repositori.RepositoryDataSiswa
-import okhttp3.Response
+import retrofit2.Response
 
 class EntryViewModel(private val repositoryDataSiswa: RepositoryDataSiswa):
     ViewModel() {
