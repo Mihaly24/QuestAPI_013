@@ -1,6 +1,10 @@
 package com.example.questapi.view
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -9,7 +13,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,6 +24,7 @@ import com.example.questapi.uicontroller.route.DestinasiDetail
 import com.example.questapi.viewmodel.DetailViewModel
 import com.example.questapi.viewmodel.StatusUIDetail
 import com.example.questapi.viewmodel.provider.PenyediaViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,29 +43,37 @@ fun DetailSiswaScreen(
             )
         },
         floatingActionButton = {
+            val id = (viewModel.statusUIDetail as? StatusUIDetail.Success)?.satusiswa?.id
             FloatingActionButton(
                 onClick = {
-                    val id = (viewModel.statusUIDetail as? StatusUIDetail.Success)?.satusiswa?.id
-                    if (id != null) navigateToEditItem(id)
+                    when (uiState) {
+                        is StatusUiDetail.Success ->
+                            navigateToEditItem(uiState.siswa.id)
+                        else -> {}
+                    }
                 },
                 shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(18.dp)
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(R.string.edit_siswa)
+                    contentDescription = stringResource(R.string.update)
                 )
             }
-        },
+        }, modifier = modifier
     ) { innerPadding ->
-        BodyDetailSiswa(
-            statusUIDetail = viewModel.statusUIDetail,
-            retryAction = viewModel::getSatuSiswa,
-            onDeleteClick = {
-                viewModel.hapusSatuSiswa()
-                navigateBack()
+        val coroutineScope = rememberCoroutineScope()
+        BodyDetailDataSiswa(
+            statusUiDetail = viewModel.statusUiDetail,
+            onDelete = {
+                coroutineScope.launch {
+                    viewModel.hapusSatuSiswa()
+                    navigateBack()
+                }
             },
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
         )
     }
 }
@@ -70,3 +85,39 @@ fun BodyDetailSiswa(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    when (statusUIDetail) {
+        is StatusUIDetail.Loading -> OnLoading(modifier = modifier)
+        is StatusUIDetail.Success -> {
+            Column(
+                modifier = modifier.fillMaxWidth().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
+
+                ItemDetailMhs(
+                    siswa = statusUIDetail.satusiswa,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedButton(
+                    onClick = { deleteConfirmationRequired = true },
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+                if (deleteConfirmationRequired) {
+                    DeleteConfirmationDialog(
+                        onDeleteConfirm = {
+                            deleteConfirmationRequired = false
+                            onDeleteClick()
+                        },
+                        onDeleteCancel = { deleteConfirmationRequired = false },
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+        }
+        is StatusUIDetail.Error -> OnError(retryAction, modifier = modifier)
+    }
+}
+}
