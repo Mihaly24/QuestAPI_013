@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.questapi.R
+import com.example.questapi.modeldata.DataSiswa
 import com.example.questapi.uicontroller.route.DestinasiDetail
 import com.example.questapi.viewmodel.DetailViewModel
 import com.example.questapi.viewmodel.StatusUIDetail
@@ -58,12 +59,12 @@ fun DetailSiswaScreen(
             )
         },
         floatingActionButton = {
-            val id = (viewModel.statusUIDetail as? StatusUIDetail.Success)?.satusiswa?.id
+            val uiState = viewModel.statusUIDetail
             FloatingActionButton(
                 onClick = {
                     when (uiState) {
-                        is StatusUiDetail.Success ->
-                            navigateToEditItem(uiState.siswa.id)
+                        is StatusUIDetail.Success ->
+                            navigateToEditItem(uiState.satusiswa.id)
                         else -> {}
                     }
                 },
@@ -75,11 +76,12 @@ fun DetailSiswaScreen(
                     contentDescription = stringResource(R.string.update)
                 )
             }
-        }, modifier = modifier
+        },
+        modifier = modifier
     ) { innerPadding ->
         val coroutineScope = rememberCoroutineScope()
         BodyDetailDataSiswa(
-            statusUiDetail = viewModel.statusUiDetail,
+            statusUiDetail = viewModel.statusUIDetail,
             onDelete = {
                 coroutineScope.launch {
                     viewModel.hapusSatuSiswa()
@@ -95,7 +97,7 @@ fun DetailSiswaScreen(
 
 @Composable
 private fun BodyDetailDataSiswa(
-    statusUiDetail: StatusUiDetail,
+    statusUiDetail: StatusUIDetail,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -106,9 +108,9 @@ private fun BodyDetailDataSiswa(
         var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
 
         when (statusUiDetail) {
-            is StatusUiDetail.Success -> {
+            is StatusUIDetail.Success -> {
                 DetailDataSiswa(
-                    siswa = statusUiDetail.siswa,
+                    siswa = statusUiDetail.satusiswa,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -138,7 +140,7 @@ private fun BodyDetailDataSiswa(
 
 @Composable
 fun DetailDataSiswa(
-    siswa: Siswa,
+    siswa: DataSiswa,
     modifier: Modifier = Modifier
 ) {
     Card(
