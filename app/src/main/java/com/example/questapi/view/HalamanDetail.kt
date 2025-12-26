@@ -62,3 +62,11 @@ fun DetailSiswaScreen(
         )
     }
 }
+
+@Composable
+fun BodyDetailSiswa(
+    statusUIDetail: StatusUIDetail,
+    retryAction: () -> Unit,
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
