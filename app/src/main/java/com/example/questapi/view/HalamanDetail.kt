@@ -1,5 +1,6 @@
 package com.example.questapi.view
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,9 +12,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -79,45 +86,44 @@ fun DetailSiswaScreen(
 }
 
 @Composable
-fun BodyDetailSiswa(
-    statusUIDetail: StatusUIDetail,
-    retryAction: () -> Unit,
-    onDeleteClick: () -> Unit,
+private fun BodyDetailDataSiswa(
+    statusUiDetail: StatusUiDetail,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    when (statusUIDetail) {
-        is StatusUIDetail.Loading -> OnLoading(modifier = modifier)
-        is StatusUIDetail.Success -> {
-            Column(
-                modifier = modifier.fillMaxWidth().padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
+    Column(
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
+        var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
 
-                ItemDetailMhs(
-                    siswa = statusUIDetail.satusiswa,
+        when (statusUiDetail) {
+            is StatusUiDetail.Success -> {
+                DetailDataSiswa(
+                    siswa = statusUiDetail.siswa,
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedButton(
-                    onClick = { deleteConfirmationRequired = true },
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
-                if (deleteConfirmationRequired) {
-                    DeleteConfirmationDialog(
-                        onDeleteConfirm = {
-                            deleteConfirmationRequired = false
-                            onDeleteClick()
-                        },
-                        onDeleteCancel = { deleteConfirmationRequired = false },
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
             }
+            else -> {}
         }
-        is StatusUIDetail.Error -> OnError(retryAction, modifier = modifier)
+
+        OutlinedButton(
+            onClick = { deleteConfirmationRequired = true },
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.delete))
+        }
+
+        if (deleteConfirmationRequired) {
+            DeleteConfirmationDialog(
+                onDeleteConfirm = {
+                    deleteConfirmationRequired = false
+                    onDelete()
+                },
+                onDeleteCancel = { deleteConfirmationRequired = false },
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+            )
+        }
     }
-}
 }
